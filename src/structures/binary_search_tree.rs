@@ -1,4 +1,4 @@
-use std::{fmt::Display, mem};
+use std::{fmt::Display, mem, cmp};
 
 pub enum BinarySearchTree<T> {
     Empty,
@@ -236,6 +236,19 @@ impl<T: Ord + Display> BinarySearchTree<T> {
         }
     }
    }
+
+   pub fn get_height(&self) -> i32 {
+    match self {
+        BinarySearchTree::Empty => {
+            return 0;
+        }
+        BinarySearchTree::NonEmpty(node) => {
+            let left_tree_height = node.left.get_height();
+            let right_tree_height= node.right.get_height();
+            return 1 + cmp::max(left_tree_height, right_tree_height);
+        }
+    }
+   }
 }
 
 pub struct TreeNode<T> {
@@ -422,4 +435,19 @@ fn test_traversal_outputs() {
     println!("");
     println!("POST ORDER: LEFT -> RIGHT -> ROOT");
     bst.post_order_traversal();
+}
+
+#[test]
+fn test_get_height() {
+    let mut bst = BinarySearchTree::new();
+    bst.add(10);
+    assert!(bst.get_height() == 1);
+    bst.add(8);
+    bst.add(20);
+    bst.add(4);
+    assert!(bst.get_height() == 3);
+    bst.add(9);
+    bst.add(2);
+    bst.add(1);
+    assert!(bst.get_height() == 5)
 }
