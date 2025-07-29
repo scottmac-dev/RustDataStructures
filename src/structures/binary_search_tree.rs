@@ -1,5 +1,16 @@
 use std::{fmt::Display, mem, cmp};
 
+pub struct TreeNode<T> {
+    pub value: T,
+    pub left: BinarySearchTree<T>,
+    pub right: BinarySearchTree<T>,
+}
+
+impl<T: Display> TreeNode<T> {
+    pub fn print(&self) -> String {
+        format!("{}", self.value)
+    }
+}
 pub enum BinarySearchTree<T> {
     Empty,
     NonEmpty(Box<TreeNode<T>>),
@@ -251,19 +262,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
    }
 }
 
-pub struct TreeNode<T> {
-    pub value: T,
-    pub left: BinarySearchTree<T>,
-    pub right: BinarySearchTree<T>,
-}
-
-impl<T: Display> TreeNode<T> {
-    pub fn print(&self) -> String {
-        format!("{}", self.value)
-    }
-}
-
-
+/// Unit tests for BST
 #[test]
 fn test_add_node() {
     let mut bst = BinarySearchTree::new();
@@ -272,7 +271,6 @@ fn test_add_node() {
     let search_term = "root";
     assert!(bst.contains(&search_term))
 }
-
 #[test]
 fn test_add_multiple_nodes() {
     let mut bst = BinarySearchTree::new();
@@ -289,7 +287,6 @@ fn test_add_multiple_nodes() {
     assert!(bst.contains(&search_term2));
     assert!(bst.contains(&search_term3));
 }
-
 #[test]
 fn test_contains_for_missing_value() {
     let mut bst = BinarySearchTree::new();
@@ -300,7 +297,6 @@ fn test_contains_for_missing_value() {
     let valid = bst.contains(&"invalid");
     assert!(valid == false);
 }
-
 #[test]
 fn test_remove() {
     let mut bst = BinarySearchTree::new();
@@ -313,7 +309,6 @@ fn test_remove() {
     let removed2 = bst.remove(&"invalid");
     assert!(removed2.is_none());
 }
-
 #[test]
 fn test_remove_min() {
     let mut bst = BinarySearchTree::new();
@@ -337,7 +332,6 @@ fn test_remove_min() {
     assert!(bst.contains(&2) == false)
 
 }
-
 #[test]
 fn test_remove_max() {
     let mut bst = BinarySearchTree::new();
@@ -361,7 +355,6 @@ fn test_remove_max() {
     }
     assert!(bst.contains(&20) == false)
 }
-
 #[test]
 fn test_find_min() {
     let mut bst = BinarySearchTree::new();
@@ -385,7 +378,6 @@ fn test_find_min() {
     }
     assert!(bst.contains(&2))
 }
-
 #[test]
 fn test_find_max() {
     let mut bst = BinarySearchTree::new();
@@ -409,7 +401,6 @@ fn test_find_max() {
     }
     assert!(bst.contains(&20))
 }
-
 #[test]
 fn test_traversal_outputs() {
     let mut bst = BinarySearchTree::new();
@@ -436,7 +427,6 @@ fn test_traversal_outputs() {
     println!("POST ORDER: LEFT -> RIGHT -> ROOT");
     bst.post_order_traversal();
 }
-
 #[test]
 fn test_get_height() {
     let mut bst = BinarySearchTree::new();
