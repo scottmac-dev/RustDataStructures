@@ -1,29 +1,31 @@
 use std::{cmp, fmt::Display, mem};
 
+/// TreeNode struct
 pub struct TreeNode<T> {
-    pub value: T,
-    pub left: BinarySearchTree<T>,
-    pub right: BinarySearchTree<T>,
+    pub value: T,                   // stored value
+    pub left: BinarySearchTree<T>,  // left ref pointer
+    pub right: BinarySearchTree<T>, // right ref pointer
 }
-
 impl<T: Display> TreeNode<T> {
+    /// Print stored value
     pub fn print(&self) -> String {
         format!("{}", self.value)
     }
 }
-
+/// BST is enum empty or non-empty (stores a TreeNode)
 pub enum BinarySearchTree<T> {
     Empty,
     NonEmpty(Box<TreeNode<T>>),
 }
-
 impl<T: Ord + Display> BinarySearchTree<T> {
+    /// Create new empty BST
     pub fn new() -> Self {
         BinarySearchTree::Empty
     }
-
+    /// Add new node
     pub fn add(&mut self, new_value: T) {
         match *self {
+            // If empty add to current
             BinarySearchTree::Empty => {
                 *self = BinarySearchTree::NonEmpty(Box::new(TreeNode {
                     value: new_value,
@@ -31,6 +33,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
                     right: BinarySearchTree::Empty,
                 }))
             }
+            // Else recursive add based of comparison
             BinarySearchTree::NonEmpty(ref mut node) => {
                 if new_value < node.value {
                     node.left.add(new_value);
@@ -38,11 +41,12 @@ impl<T: Ord + Display> BinarySearchTree<T> {
                     node.right.add(new_value);
                 } else {
                     // do nothing if same
+                    println!("Value {} already exists in BST", &new_value)
                 }
             }
         }
     }
-
+    /// Bool return for value exists in BST
     pub fn contains(&self, search_value: &T) -> bool {
         match self {
             BinarySearchTree::Empty => false,
@@ -57,7 +61,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             }
         }
     }
-
+    /// Remove value from BST and return if found, else None
     pub fn remove(&mut self, search_value: &T) -> Option<T> {
         match self {
             BinarySearchTree::Empty => None,
@@ -109,7 +113,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             }
         }
     }
-
+    /// Remove and return smallest value in BST
     pub fn remove_min(&mut self) -> Option<T> {
         match self {
             BinarySearchTree::Empty => None,
@@ -128,7 +132,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             },
         }
     }
-
+    /// Remove and return largest value in BST
     pub fn remove_max(&mut self) -> Option<T> {
         match self {
             BinarySearchTree::Empty => None,
@@ -147,7 +151,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             },
         }
     }
-
+    /// Return smallest value in BST
     pub fn find_min(&self) -> Option<&T> {
         match self {
             BinarySearchTree::Empty => None,
@@ -157,7 +161,7 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             },
         }
     }
-
+    /// Return largest value in BST
     pub fn find_max(&self) -> Option<&T> {
         match self {
             BinarySearchTree::Empty => None,
@@ -167,11 +171,11 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             },
         }
     }
-
+    /// Print BST values IN ORDER
     pub fn in_order_traversal(&self) {
         match self {
             BinarySearchTree::Empty => {
-                // Do nothing
+                // Do nothing for empty nodes
             }
             BinarySearchTree::NonEmpty(node) => {
                 let _ = &node.left.in_order_traversal();
@@ -180,11 +184,11 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             }
         }
     }
-
+    /// Print BST values PRE ORDER
     pub fn pre_order_traversal(&self) {
         match self {
             BinarySearchTree::Empty => {
-                // Do nothing
+                // Do nothing for empty nodes
             }
             BinarySearchTree::NonEmpty(node) => {
                 print!("{} ", node.print());
@@ -193,11 +197,11 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             }
         }
     }
-
+    /// Print BST values POST ORDER
     pub fn post_order_traversal(&self) {
         match self {
             BinarySearchTree::Empty => {
-                // Do nothing
+                // Do nothing for empty nodes
             }
             BinarySearchTree::NonEmpty(node) => {
                 let _ = &node.left.post_order_traversal();
@@ -206,14 +210,14 @@ impl<T: Ord + Display> BinarySearchTree<T> {
             }
         }
     }
-
+    /// Return true if BST empty
     pub fn is_empty(&self) -> bool {
         match self {
             BinarySearchTree::Empty => true,
             BinarySearchTree::NonEmpty(_) => false,
         }
     }
-
+    /// Return height of tree on max branch
     pub fn get_height(&self) -> i32 {
         match self {
             BinarySearchTree::Empty => {
@@ -227,14 +231,10 @@ impl<T: Ord + Display> BinarySearchTree<T> {
         }
     }
 }
-
 // Unit testing module
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::structures::binary_search_tree::BinarySearchTree;
-
-    /// Unit tests for BST
     #[test]
     fn test_add_node() {
         let mut bst = BinarySearchTree::new();

@@ -1,5 +1,10 @@
 use rand::Rng;
-use std::{cell::RefCell, clone, f32, fmt::Debug, rc::Rc, usize, vec};
+use std::{
+    cell::RefCell,
+    fmt::{self, Debug, Display},
+    rc::Rc,
+    usize, vec,
+};
 
 /// Custom type representing a Link which could be None or a ref pointer
 /// to a SkipListNode
@@ -25,8 +30,17 @@ impl<T: Ord + Clone + Debug> SkipListNode<T> {
 pub struct SkipList<T: Ord + Clone + Debug> {
     pub root: Rc<RefCell<SkipListNode<T>>>,
     pub max_level: usize,
-    pub log_2: f64,
     pub size: usize,
+}
+impl<T: Display + Ord + Clone + Debug> Display for SkipList<T> {
+    /// Print string for SkipList
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "== Skip List ==")?;
+        writeln!(f, "Size: {}", self.size)?;
+        writeln!(f, "Max Level: {}", self.max_level)?;
+        writeln!(f, "Max Capacity: {}", self.calculate_max_cap())?;
+        Ok(())
+    }
 }
 impl<T: Ord + Clone + Debug> SkipList<T> {
     /// Create new SkipList with dummy head SkipListNode set to None
@@ -34,22 +48,21 @@ impl<T: Ord + Clone + Debug> SkipList<T> {
         SkipList {
             root: SkipListNode::new(None, 1),
             max_level: 1,
-            log_2: std::f64::consts::LN_2,
             size: 0,
         }
     }
-    /// Generate random level from 1 -> max_level
-    fn random_level(&self) -> usize {
-        let random = rand::rng().random_range(1..=self.max_level) as f32;
-        let mut level = (f64::from(random).ln() / self.log_2).floor() as usize;
-        if level > self.max_level - 1 {
-            level = self.max_level - 1
+    /// Generate random level from 1 -> max_level with lower levels being more frequent
+    pub fn random_level(&self) -> usize {
+        let mut level = 1;
+        let mut rng = rand::rng();
+        // Basic logarithmic imitation where each increase has 50% chance
+        while level < self.max_level && rng.random_bool(0.5) {
+            level += 1;
         }
-        let rand_level = self.max_level - 1;
-        rand_level
+        level.min(self.max_level - 1)
     }
     /// Calculate max cap before requiring max level increase
-    fn calculate_max_cap(&self) -> usize {
+    pub fn calculate_max_cap(&self) -> usize {
         (1 << self.max_level) - 1
     }
     /// Search for item in list and return vector of prev nodes to target at each level
