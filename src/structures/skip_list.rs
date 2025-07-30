@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::{cell::RefCell, f32, fmt::Debug, rc::Rc, usize, vec};
+use std::{cell::RefCell, clone, f32, fmt::Debug, rc::Rc, usize, vec};
 
 /// Custom type representing a Link which could be None or a ref pointer
 /// to a SkipListNode
@@ -106,6 +106,22 @@ impl<T: Ord + Clone + Debug> SkipList<T> {
         if self.size > self.calculate_max_cap() {
             self.max_level += 1;
             self.root.borrow_mut().links.push(None);
+        }
+    }
+    /// Return a reference to a search value if found in list
+    fn find(&mut self, target: T) -> Option<&T> {
+        let mut prev = self.search(&target);
+        let compare = prev[0].borrow().links[0].clone();
+        if let Some(compare) = compare {
+            let compare_data = compare.borrow().data.unwrap();
+            if compare_data == target {
+                return Some(&compare_data.clone());
+            }
+            else {
+                return None;
+            }
+        } else {
+            None
         }
     }
 }
