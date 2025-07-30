@@ -1,4 +1,4 @@
-use std::{fmt::Display, mem, cmp};
+use std::{cmp, fmt::Display, mem};
 
 pub enum BinarySearchTree<T> {
     Empty,
@@ -6,116 +6,102 @@ pub enum BinarySearchTree<T> {
 }
 
 impl<T: Ord + Display> BinarySearchTree<T> {
+    pub fn new() -> Self {
+        BinarySearchTree::Empty
+    }
 
-   pub fn new() -> Self {
-    BinarySearchTree::Empty
-   } 
-
-   pub fn add(&mut self, new_value: T){
-    match *self {
-        BinarySearchTree::Empty => {
-            *self = BinarySearchTree::NonEmpty(Box::new(TreeNode {
-                value: new_value,
-                left: BinarySearchTree::Empty,
-                right: BinarySearchTree::Empty,
-            }))
-        }
-        BinarySearchTree::NonEmpty(ref mut node) => {
-            if new_value < node.value {
-                node.left.add(new_value);
-            } 
-            else if new_value > node.value {
-                node.right.add(new_value);
+    pub fn add(&mut self, new_value: T) {
+        match *self {
+            BinarySearchTree::Empty => {
+                *self = BinarySearchTree::NonEmpty(Box::new(TreeNode {
+                    value: new_value,
+                    left: BinarySearchTree::Empty,
+                    right: BinarySearchTree::Empty,
+                }))
             }
-            else {
-                // do nothing if same
+            BinarySearchTree::NonEmpty(ref mut node) => {
+                if new_value < node.value {
+                    node.left.add(new_value);
+                } else if new_value > node.value {
+                    node.right.add(new_value);
+                } else {
+                    // do nothing if same
+                }
             }
         }
     }
-   }
 
-   pub fn contains(&self, search_value: &T) -> bool {
-    match self {
-        BinarySearchTree::Empty => {
-            false
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            if search_value < &node.value {
-                return node.left.contains(search_value)
-            }
-            else if search_value > &node.value {
-                return node.right.contains(search_value)
-            }
-            else {
-                true
+    pub fn contains(&self, search_value: &T) -> bool {
+        match self {
+            BinarySearchTree::Empty => false,
+            BinarySearchTree::NonEmpty(node) => {
+                if search_value < &node.value {
+                    return node.left.contains(search_value);
+                } else if search_value > &node.value {
+                    return node.right.contains(search_value);
+                } else {
+                    true
+                }
             }
         }
     }
-   }
 
-   pub fn remove(&mut self, search_value: &T) -> Option<T> {
-    match self {
-        BinarySearchTree::Empty => {
-            None
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            if search_value < &node.value {
-                return node.left.remove(search_value);
-            } 
-            else if search_value > &node.value {
-                return node.right.remove(search_value);
-            }
-            else {
-               match(&mut node.left, &mut node.right){
-                (BinarySearchTree::Empty, BinarySearchTree::Empty) => {
-                    let removed = mem::replace(self, BinarySearchTree::Empty);
-                    if let BinarySearchTree::NonEmpty(node) = removed {
-                        Some(node.value)
-                    } else {
-                        None
+    pub fn remove(&mut self, search_value: &T) -> Option<T> {
+        match self {
+            BinarySearchTree::Empty => None,
+            BinarySearchTree::NonEmpty(node) => {
+                if search_value < &node.value {
+                    return node.left.remove(search_value);
+                } else if search_value > &node.value {
+                    return node.right.remove(search_value);
+                } else {
+                    match (&mut node.left, &mut node.right) {
+                        (BinarySearchTree::Empty, BinarySearchTree::Empty) => {
+                            let removed = mem::replace(self, BinarySearchTree::Empty);
+                            if let BinarySearchTree::NonEmpty(node) = removed {
+                                Some(node.value)
+                            } else {
+                                None
+                            }
+                        }
+                        (BinarySearchTree::Empty, _) => {
+                            let mut right = BinarySearchTree::Empty;
+                            mem::swap(&mut right, &mut node.right);
+                            let removed = mem::replace(self, right);
+                            if let BinarySearchTree::NonEmpty(node) = removed {
+                                Some(node.value)
+                            } else {
+                                None
+                            }
+                        }
+                        (_, BinarySearchTree::Empty) => {
+                            let mut left = BinarySearchTree::Empty;
+                            mem::swap(&mut left, &mut node.left);
+                            let removed = mem::replace(self, left);
+                            if let BinarySearchTree::NonEmpty(node) = removed {
+                                Some(node.value)
+                            } else {
+                                None
+                            }
+                        }
+                        (_, _) => {
+                            if let Some(min_value) = node.right.remove_min() {
+                                let old_value = mem::replace(&mut node.value, min_value);
+                                Some(old_value)
+                            } else {
+                                None
+                            }
+                        }
                     }
                 }
-                (BinarySearchTree::Empty, _) => {
-                    let mut right = BinarySearchTree::Empty;
-                    mem::swap(&mut right, &mut node.right);
-                    let removed = mem::replace(self, right);
-                    if let BinarySearchTree::NonEmpty(node) = removed {
-                        Some(node.value)
-                    } else {
-                        None
-                    }
-                }
-                (_, BinarySearchTree::Empty) => {
-                    let mut left = BinarySearchTree::Empty;
-                    mem::swap(&mut left, &mut node.left);
-                    let removed = mem::replace(self, left);
-                    if let BinarySearchTree::NonEmpty(node) = removed {
-                        Some(node.value)
-                    } else {
-                        None
-                    }
-                }
-                (_, _) => {
-                    if let Some(min_value) = node.right.remove_min() {
-                        let old_value = mem::replace(&mut node.value, min_value);
-                        Some(old_value)
-                    } else {
-                        None
-                    }
-                }
-               }  
             }
         }
     }
-   }
 
-   pub fn remove_min(&mut self) -> Option<T> {
-    match self{
-        BinarySearchTree::Empty => {
-            None
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            match node.left {
+    pub fn remove_min(&mut self) -> Option<T> {
+        match self {
+            BinarySearchTree::Empty => None,
+            BinarySearchTree::NonEmpty(node) => match node.left {
                 BinarySearchTree::Empty => {
                     let mut right = BinarySearchTree::Empty;
                     mem::swap(&mut right, &mut node.right);
@@ -127,18 +113,14 @@ impl<T: Ord + Display> BinarySearchTree<T> {
                     }
                 }
                 _ => node.left.remove_min(),
-            }
+            },
         }
     }
-   }
 
-   pub fn remove_max(&mut self) -> Option<T> {
-    match self {
-        BinarySearchTree::Empty => {
-            None
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            match node.right {
+    pub fn remove_max(&mut self) -> Option<T> {
+        match self {
+            BinarySearchTree::Empty => None,
+            BinarySearchTree::NonEmpty(node) => match node.right {
                 BinarySearchTree::Empty => {
                     let mut left = BinarySearchTree::Empty;
                     mem::swap(&mut left, &mut node.left);
@@ -150,105 +132,88 @@ impl<T: Ord + Display> BinarySearchTree<T> {
                     }
                 }
                 _ => node.right.remove_max(),
-            }
+            },
         }
     }
-   }
 
-   pub fn find_min(&self) -> Option<&T> {
-    match self{
-        BinarySearchTree::Empty => {
-            None
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            match node.left {
-                BinarySearchTree::Empty => {
-                    Some(&node.value)
-                }
+    pub fn find_min(&self) -> Option<&T> {
+        match self {
+            BinarySearchTree::Empty => None,
+            BinarySearchTree::NonEmpty(node) => match node.left {
+                BinarySearchTree::Empty => Some(&node.value),
                 _ => node.left.find_min(),
-            }
+            },
         }
     }
-   }
 
-   pub fn find_max(&self) -> Option<&T> {
-    match self {
-        BinarySearchTree::Empty => {
-            None
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            match node.right {
-                BinarySearchTree::Empty => {
-                    Some(&node.value)
-                }
+    pub fn find_max(&self) -> Option<&T> {
+        match self {
+            BinarySearchTree::Empty => None,
+            BinarySearchTree::NonEmpty(node) => match node.right {
+                BinarySearchTree::Empty => Some(&node.value),
                 _ => node.right.find_max(),
+            },
+        }
+    }
+
+    pub fn in_order_traversal(&self) {
+        match self {
+            BinarySearchTree::Empty => {
+                // Do nothing
+            }
+            BinarySearchTree::NonEmpty(node) => {
+                let _ = &node.left.in_order_traversal();
+                print!("{} ", node.print());
+                let _ = &node.right.in_order_traversal();
             }
         }
     }
-   }
 
-   pub fn in_order_traversal(&self) {
-    match self {
-        BinarySearchTree::Empty => {
-            // Do nothing
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            let _ = &node.left.in_order_traversal();
-            print!("{} ", node.print());
-            let _ = &node.right.in_order_traversal();
+    pub fn pre_order_traversal(&self) {
+        match self {
+            BinarySearchTree::Empty => {
+                // Do nothing
+            }
+            BinarySearchTree::NonEmpty(node) => {
+                print!("{} ", node.print());
+                let _ = &node.left.pre_order_traversal();
+                let _ = &node.right.pre_order_traversal();
+            }
         }
     }
-   }
 
-   pub fn pre_order_traversal(&self) {
-    match self {
-        BinarySearchTree::Empty => {
-            // Do nothing
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            print!("{} ", node.print());
-            let _ = &node.left.pre_order_traversal();
-            let _ = &node.right.pre_order_traversal();
+    pub fn post_order_traversal(&self) {
+        match self {
+            BinarySearchTree::Empty => {
+                // Do nothing
+            }
+            BinarySearchTree::NonEmpty(node) => {
+                let _ = &node.left.post_order_traversal();
+                let _ = &node.right.post_order_traversal();
+                print!("{} ", node.print());
+            }
         }
     }
-   }
 
-   pub fn post_order_traversal(&self) {
-    match self {
-        BinarySearchTree::Empty => {
-            // Do nothing
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            let _ = &node.left.post_order_traversal();
-            let _ = &node.right.post_order_traversal();
-            print!("{} ", node.print());
+    pub fn is_empty(&self) -> bool {
+        match self {
+            BinarySearchTree::Empty => true,
+            BinarySearchTree::NonEmpty(_) => false,
         }
     }
-   }
 
-   pub fn is_empty(&self) -> bool {
-    match self{
-        BinarySearchTree::Empty => {
-            true
-        }
-        BinarySearchTree::NonEmpty(_) => {
-            false
+    pub fn get_height(&self) -> i32 {
+        match self {
+            BinarySearchTree::Empty => {
+                return 0;
+            }
+            BinarySearchTree::NonEmpty(node) => {
+                let left_tree_height = node.left.get_height();
+                let right_tree_height = node.right.get_height();
+                return 1 + cmp::max(left_tree_height, right_tree_height);
+            }
         }
     }
-   }
-
-   pub fn get_height(&self) -> i32 {
-    match self {
-        BinarySearchTree::Empty => {
-            return 0;
-        }
-        BinarySearchTree::NonEmpty(node) => {
-            let left_tree_height = node.left.get_height();
-            let right_tree_height= node.right.get_height();
-            return 1 + cmp::max(left_tree_height, right_tree_height);
-        }
-    }
-   }
 }
 
 pub struct TreeNode<T> {
@@ -262,7 +227,6 @@ impl<T: Display> TreeNode<T> {
         format!("{}", self.value)
     }
 }
-
 
 #[test]
 fn test_add_node() {
@@ -335,7 +299,6 @@ fn test_remove_min() {
         }
     }
     assert!(bst.contains(&2) == false)
-
 }
 
 #[test]
@@ -451,3 +414,4 @@ fn test_get_height() {
     bst.add(1);
     assert!(bst.get_height() == 5)
 }
+
