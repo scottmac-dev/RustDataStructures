@@ -3,6 +3,13 @@ name = "data-structures"
 version = "0.1.0"
 edition = "2024"
 authors = ["scottmac-dev"]
+description = "A simple librry implementing a BST and SkipList data structure in Rust"
+license = "MIT"
+repository = "https://github.com/scottmac-dev/RustDataStructures"
+
+[lib]
+name = "rust_data_structures"
+path = "src/lib.rs"
 
 [dependencies]
 rand = "0.9.2"
