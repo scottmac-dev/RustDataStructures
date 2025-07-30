@@ -114,8 +114,24 @@ impl<T: Ord + Clone + Debug> SkipList<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::structures::skip_list;
+    use crate::structures::skip_list::SkipList;
 
     #[test]
-    fn test_insert() {}
+    fn test_create_list() {
+        // test list of usize type
+        let test_list: SkipList<usize> = SkipList::new();
+        assert_eq!(test_list.size, 0);
+        assert_eq!(test_list.max_level, 1);
+    }
+    #[test]
+    fn test_insert_increases_size() {
+        // test list of usize type
+        let mut test_list: SkipList<usize> = SkipList::new();
+        assert_eq!(test_list.size, 0);
+        test_list.insert(3);
+        test_list.insert(5);
+        test_list.insert(10);
+        test_list.insert(1);
+        assert_eq!(test_list.size, 4);
+    }
 }

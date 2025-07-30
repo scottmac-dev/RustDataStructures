@@ -11,6 +11,7 @@ impl<T: Display> TreeNode<T> {
         format!("{}", self.value)
     }
 }
+
 pub enum BinarySearchTree<T> {
     Empty,
     NonEmpty(Box<TreeNode<T>>),
@@ -227,193 +228,188 @@ impl<T: Ord + Display> BinarySearchTree<T> {
     }
 }
 
-pub struct TreeNode<T> {
-    pub value: T,
-    pub left: BinarySearchTree<T>,
-    pub right: BinarySearchTree<T>,
-}
+// Unit testing module
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::structures::binary_search_tree::BinarySearchTree;
 
-impl<T: Display> TreeNode<T> {
-    pub fn print(&self) -> String {
-        format!("{}", self.value)
+    /// Unit tests for BST
+    #[test]
+    fn test_add_node() {
+        let mut bst = BinarySearchTree::new();
+        assert!(bst.is_empty());
+        bst.add("root");
+        let search_term = "root";
+        assert!(bst.contains(&search_term))
     }
-}
+    #[test]
+    fn test_add_multiple_nodes() {
+        let mut bst = BinarySearchTree::new();
+        assert!(bst.is_empty());
+        bst.add("root");
+        bst.add("child1");
+        bst.add("child2");
+        bst.add("another");
+        bst.add("and another");
+        let search_term1 = "another";
+        let search_term2 = "child2";
+        let search_term3 = "and another";
+        assert!(bst.contains(&search_term1));
+        assert!(bst.contains(&search_term2));
+        assert!(bst.contains(&search_term3));
+    }
+    #[test]
+    fn test_contains_for_missing_value() {
+        let mut bst = BinarySearchTree::new();
+        assert!(bst.is_empty());
+        bst.add("root");
+        bst.add("child1");
+        bst.add("child2");
+        let valid = bst.contains(&"invalid");
+        assert!(valid == false);
+    }
+    #[test]
+    fn test_remove() {
+        let mut bst = BinarySearchTree::new();
+        assert!(bst.is_empty());
+        bst.add("root");
+        bst.add("child1");
+        bst.add("child2");
+        let removed = bst.remove(&"child2");
+        assert!(removed.is_some());
+        let removed2 = bst.remove(&"invalid");
+        assert!(removed2.is_none());
+    }
+    #[test]
+    fn test_remove_min() {
+        let mut bst = BinarySearchTree::new();
+        bst.add(10);
+        bst.add(8);
+        bst.add(20);
+        bst.add(4);
+        bst.add(9);
+        bst.add(2);
 
-/// Unit tests for BST
-#[test]
-fn test_add_node() {
-    let mut bst = BinarySearchTree::new();
-    assert!(bst.is_empty());
-    bst.add("root");
-    let search_term = "root";
-    assert!(bst.contains(&search_term))
-}
-#[test]
-fn test_add_multiple_nodes() {
-    let mut bst = BinarySearchTree::new();
-    assert!(bst.is_empty());
-    bst.add("root");
-    bst.add("child1");
-    bst.add("child2");
-    bst.add("another");
-    bst.add("and another");
-    let search_term1 = "another";
-    let search_term2 = "child2";
-    let search_term3 = "and another";
-    assert!(bst.contains(&search_term1));
-    assert!(bst.contains(&search_term2));
-    assert!(bst.contains(&search_term3));
-}
-#[test]
-fn test_contains_for_missing_value() {
-    let mut bst = BinarySearchTree::new();
-    assert!(bst.is_empty());
-    bst.add("root");
-    bst.add("child1");
-    bst.add("child2");
-    let valid = bst.contains(&"invalid");
-    assert!(valid == false);
-}
-#[test]
-fn test_remove() {
-    let mut bst = BinarySearchTree::new();
-    assert!(bst.is_empty());
-    bst.add("root");
-    bst.add("child1");
-    bst.add("child2");
-    let removed = bst.remove(&"child2");
-    assert!(removed.is_some());
-    let removed2 = bst.remove(&"invalid");
-    assert!(removed2.is_none());
-}
-#[test]
-fn test_remove_min() {
-    let mut bst = BinarySearchTree::new();
-    bst.add(10);
-    bst.add(8);
-    bst.add(20);
-    bst.add(4);
-    bst.add(9);
-    bst.add(2);
-
-    let min = bst.remove_min();
-    assert!(min.is_some());
-    match min {
-        Some(value) => {
-            assert!(value == 2)
+        let min = bst.remove_min();
+        assert!(min.is_some());
+        match min {
+            Some(value) => {
+                assert!(value == 2)
+            }
+            None => {
+                assert!(false)
+            }
         }
-        None => {
-            assert!(false)
-        }
+        assert!(bst.contains(&2) == false)
     }
-    assert!(bst.contains(&2) == false)
-}
-#[test]
-fn test_remove_max() {
-    let mut bst = BinarySearchTree::new();
-    bst.add(10);
-    bst.add(8);
-    bst.add(20);
-    bst.add(4);
-    bst.add(9);
-    bst.add(2);
-    bst.add(17);
-    bst.add(3);
-    let max = bst.remove_max();
-    assert!(max.is_some());
-    match max {
-        Some(value) => {
-            assert!(value == 20)
+    #[test]
+    fn test_remove_max() {
+        let mut bst = BinarySearchTree::new();
+        bst.add(10);
+        bst.add(8);
+        bst.add(20);
+        bst.add(4);
+        bst.add(9);
+        bst.add(2);
+        bst.add(17);
+        bst.add(3);
+        let max = bst.remove_max();
+        assert!(max.is_some());
+        match max {
+            Some(value) => {
+                assert!(value == 20)
+            }
+            None => {
+                assert!(false)
+            }
         }
-        None => {
-            assert!(false)
-        }
+        assert!(bst.contains(&20) == false)
     }
-    assert!(bst.contains(&20) == false)
-}
-#[test]
-fn test_find_min() {
-    let mut bst = BinarySearchTree::new();
-    bst.add(10);
-    bst.add(8);
-    bst.add(20);
-    bst.add(4);
-    bst.add(9);
-    bst.add(2);
-    bst.add(17);
-    bst.add(3);
-    let min = bst.find_min();
-    assert!(min.is_some());
-    match min {
-        Some(value) => {
-            assert!(value == &2)
+    #[test]
+    fn test_find_min() {
+        let mut bst = BinarySearchTree::new();
+        bst.add(10);
+        bst.add(8);
+        bst.add(20);
+        bst.add(4);
+        bst.add(9);
+        bst.add(2);
+        bst.add(17);
+        bst.add(3);
+        let min = bst.find_min();
+        assert!(min.is_some());
+        match min {
+            Some(value) => {
+                assert!(value == &2)
+            }
+            None => {
+                assert!(false)
+            }
         }
-        None => {
-            assert!(false)
-        }
+        assert!(bst.contains(&2))
     }
-    assert!(bst.contains(&2))
-}
-#[test]
-fn test_find_max() {
-    let mut bst = BinarySearchTree::new();
-    bst.add(10);
-    bst.add(8);
-    bst.add(20);
-    bst.add(4);
-    bst.add(9);
-    bst.add(2);
-    bst.add(17);
-    bst.add(3);
-    let max = bst.find_max();
-    assert!(max.is_some());
-    match max {
-        Some(value) => {
-            assert!(value == &20)
+    #[test]
+    fn test_find_max() {
+        let mut bst = BinarySearchTree::new();
+        bst.add(10);
+        bst.add(8);
+        bst.add(20);
+        bst.add(4);
+        bst.add(9);
+        bst.add(2);
+        bst.add(17);
+        bst.add(3);
+        let max = bst.find_max();
+        assert!(max.is_some());
+        match max {
+            Some(value) => {
+                assert!(value == &20)
+            }
+            None => {
+                assert!(false)
+            }
         }
-        None => {
-            assert!(false)
-        }
+        assert!(bst.contains(&20))
     }
-    assert!(bst.contains(&20))
-}
-#[test]
-fn test_traversal_outputs() {
-    let mut bst = BinarySearchTree::new();
-    bst.add(10);
-    bst.add(8);
-    bst.add(20);
-    bst.add(4);
-    bst.add(9);
-    bst.add(2);
-    bst.add(17);
-    bst.add(3);
-    bst.add(17);
-    bst.add(89);
-    bst.add(11);
-    bst.add(32);
-    bst.add(22);
-    bst.add(1);
-    println!("IN ORDER: LEFT -> ROOT -> RIGHT");
-    bst.in_order_traversal();
-    println!("");
-    println!("PRE ORDER: ROOT -> LEFT -> RIGHT");
-    bst.pre_order_traversal();
-    println!("");
-    println!("POST ORDER: LEFT -> RIGHT -> ROOT");
-    bst.post_order_traversal();
-}
-#[test]
-fn test_get_height() {
-    let mut bst = BinarySearchTree::new();
-    bst.add(10);
-    assert!(bst.get_height() == 1);
-    bst.add(8);
-    bst.add(20);
-    bst.add(4);
-    assert!(bst.get_height() == 3);
-    bst.add(9);
-    bst.add(2);
-    bst.add(1);
-    assert!(bst.get_height() == 5)
+    #[test]
+    fn test_traversal_outputs() {
+        let mut bst = BinarySearchTree::new();
+        bst.add(10);
+        bst.add(8);
+        bst.add(20);
+        bst.add(4);
+        bst.add(9);
+        bst.add(2);
+        bst.add(17);
+        bst.add(3);
+        bst.add(17);
+        bst.add(89);
+        bst.add(11);
+        bst.add(32);
+        bst.add(22);
+        bst.add(1);
+        println!("IN ORDER: LEFT -> ROOT -> RIGHT");
+        bst.in_order_traversal();
+        println!("");
+        println!("PRE ORDER: ROOT -> LEFT -> RIGHT");
+        bst.pre_order_traversal();
+        println!("");
+        println!("POST ORDER: LEFT -> RIGHT -> ROOT");
+        bst.post_order_traversal();
+    }
+    #[test]
+    fn test_get_height() {
+        let mut bst = BinarySearchTree::new();
+        bst.add(10);
+        assert!(bst.get_height() == 1);
+        bst.add(8);
+        bst.add(20);
+        bst.add(4);
+        assert!(bst.get_height() == 3);
+        bst.add(9);
+        bst.add(2);
+        bst.add(1);
+        assert!(bst.get_height() == 5)
+    }
 }
