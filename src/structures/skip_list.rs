@@ -8,12 +8,12 @@ type Link<T> = Option<Rc<RefCell<SkipListNode<T>>>>;
 /// SkipListNode represents a single node with Vec of Links for each Skip level
 #[derive(Debug, Clone)]
 pub struct SkipListNode<T: Ord + Clone> {
-    data: Option<T>,
-    links: Vec<Link<T>>,
+    pub data: Option<T>,
+    pub links: Vec<Link<T>>,
 }
 impl<T: Ord + Clone + Debug> SkipListNode<T> {
-    /// Create new SkipListNode
-    fn new(data: Option<T>, level: usize) -> Rc<RefCell<Self>> {
+    /// Create new SkipListNode with data passed as param
+    pub fn new(data: Option<T>, level: usize) -> Rc<RefCell<Self>> {
         Rc::new(RefCell::new(SkipListNode {
             data,
             links: vec![None; level], // vec of size levels
@@ -48,17 +48,17 @@ impl<T: Ord + Clone + Debug> SkipList<T> {
         let rand_level = self.max_level - 1;
         rand_level
     }
-    /// Calculate max cap before extending max level
+    /// Calculate max cap before requiring max level increase
     fn calculate_max_cap(&self) -> usize {
         (1 << self.max_level) - 1
     }
-    /// Search for item in list and return vector of prev nodes at each level
-    /// used for insert and delete to enable update of prev pointers
-    fn search(&self, target: &T) -> Vec<Rc<RefCell<SkipListNode<T>>>> {
+    /// Search for item in list and return vector of prev nodes to target at each level
+    /// used for insert and delete to enable splicing of prev pointers
+    pub fn search(&self, target: &T) -> Vec<Rc<RefCell<SkipListNode<T>>>> {
         let mut prev = vec![Rc::clone(&self.root); self.max_level]; // prev level pointers
         let mut current = Rc::clone(&self.root); // start at root
 
-        // Starting from highest level with most skips
+        // Starting from highest level and working down to find previous
         for level in (0..self.max_level).rev() {
             loop {
                 let next_opt = current.borrow().links[level].clone();
@@ -76,8 +76,8 @@ impl<T: Ord + Clone + Debug> SkipList<T> {
         }
         prev
     }
-    /// Insert new value into skip list
-    fn insert(&mut self, target: T) {
+    /// Insert new value into skip list and adjust level pointers
+    pub fn insert(&mut self, target: T) {
         let mut prev = self.search(&target);
         let current = prev[0].borrow().links[0].clone();
 
@@ -109,20 +109,51 @@ impl<T: Ord + Clone + Debug> SkipList<T> {
         }
     }
     /// Return a reference to a search value if found in list
-    fn find(&mut self, target: T) -> Option<&T> {
-        let mut prev = self.search(&target);
-        let compare = prev[0].borrow().links[0].clone();
-        if let Some(compare) = compare {
-            let compare_data = compare.borrow().data.unwrap();
-            if compare_data == target {
-                return Some(&compare_data.clone());
+    pub fn find(&self, target: T) -> Option<T> {
+        let prev = self.search(&target);
+        if let Some(compare_node) = &prev[0].borrow().links[0] {
+            let compare_data = &compare_node.borrow().data;
+            if let Some(data) = compare_data {
+                if *data == target {
+                    return Some(data.clone());
+                }
             }
-            else {
-                return None;
-            }
-        } else {
-            None
         }
+        None
+    }
+    /// Return bool result if a search value is found in list
+    pub fn contains(&self, target: T) -> bool {
+        let prev = self.search(&target);
+        if let Some(compare_node) = &prev[0].borrow().links[0] {
+            let compare_data = &compare_node.borrow().data;
+            if let Some(data) = compare_data {
+                if *data == target {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+    /// Remove a value from the skip list
+    pub fn remove(&mut self, target: T) {
+        let mut prev = self.search(&target);
+        let node_to_remove = prev[0].borrow().links[0];
+
+        if let Some(node) = node_to_remove {
+            if node.borrow().data.as_ref() != Some(&target) {
+                println!("Target {:?}, not found in SkipList", &target);
+                return;
+            }
+        }
+
+        for i in 0..prev.len() {
+            if let Some(node) = node_to_remove {
+                let next = node.borrow().links.get(i).cloned().unwrap_or(None);
+                prev[i].borrow_mut().links[i] = Some(Rc::clone(&next));
+            }
+        }
+
+        self.size -= 1;
     }
 }
 
@@ -149,5 +180,31 @@ mod tests {
         test_list.insert(10);
         test_list.insert(1);
         assert_eq!(test_list.size, 4);
+    }
+    #[test]
+    fn test_find_value() {
+        // test list of usize type
+        let mut test_list: SkipList<usize> = SkipList::new();
+        test_list.insert(3);
+        test_list.insert(5);
+        test_list.insert(10);
+        test_list.insert(1);
+        let found_value = test_list.find(10);
+        let not_found_value = test_list.find(99);
+        assert_eq!(found_value, Some(10));
+        assert_eq!(not_found_value, None);
+    }
+    #[test]
+    fn test_contains_value() {
+        // test list of usize type
+        let mut test_list: SkipList<usize> = SkipList::new();
+        test_list.insert(3);
+        test_list.insert(5);
+        test_list.insert(10);
+        test_list.insert(1);
+        let found_value = test_list.contains(10);
+        let not_found_value = test_list.contains(99);
+        assert_eq!(found_value, true);
+        assert_eq!(not_found_value, false);
     }
 }
